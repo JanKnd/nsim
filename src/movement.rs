@@ -6,6 +6,17 @@ pub struct Velocity{
     pub value: Vec3,
 }
 
+#[derive(Component, Debug)]
+pub struct Mass{
+    pub value: f32,
+}
+
+//used to identify planet when calculating acceleration
+#[derive(Component, Debug)]
+pub struct ID{
+    pub value: u32,
+}
+
 pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin{

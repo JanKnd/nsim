@@ -1,2 +1,2 @@
 # nSim
-A n-body-simulation in rust using bevy
+An n-body-simulation in rust using bevy
