@@ -7,6 +7,11 @@ pub struct Velocity{
 }
 
 #[derive(Component, Debug)]
+pub struct Acceleration{
+    pub value: Vec3,
+}
+
+#[derive(Component, Debug)]
 pub struct Mass{
     pub value: f32,
 }
@@ -25,8 +30,9 @@ impl Plugin for MovementPlugin{
     }
 }
 
-fn update_position(mut query: Query<(&Velocity, &mut Transform)>, time: Res<Time>) {
-    for (velocity, mut transform) in query.iter_mut() {
+fn update_position(mut query: Query<(&mut Velocity,&Acceleration, &mut Transform)>, time: Res<Time>) {
+    for (mut velocity,acceleration, mut transform) in query.iter_mut() {
+        velocity.value += acceleration.value * time.delta_seconds();
         transform.translation += velocity.value * time.delta_seconds();
     }
 }
