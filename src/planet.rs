@@ -12,7 +12,7 @@ const STANDARDT_SCALE: Vec3 = Vec3::new(0.05,0.05,1.);
 const STANDARDT_MASS: f32 = 1000.;
 
 //number of planets
-const N: u32 = 3;
+pub(crate) const N: u32 = 3;
 
 #[derive(Bundle)]
 
@@ -47,7 +47,7 @@ fn spawn_planet(mut commands: Commands, asset_server: Res<AssetServer>){
             value: 1,
         },
         model: SpriteBundle {
-            texture: asset_server.load("planet.png"),
+            texture: asset_server.load("Frame 1.png"),
             transform: Transform{
                 translation: STARTING_TRANSLATION,
                 rotation: default(),
@@ -74,7 +74,7 @@ fn spawn_n_planets(mut commands: Commands, asset_server: Res<AssetServer>){
                 value: i+1,
             },
             model: SpriteBundle {
-                texture: asset_server.load("planet.png"),
+                texture: asset_server.load("Frame 1.png"),
                 transform: Transform{
                     translation: STARTING_TRANSLATION,
                     rotation: default(),
