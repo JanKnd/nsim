@@ -8,10 +8,6 @@ pub struct Velocity{
     pub value: Vec3,
 }
 
-#[derive(Component, Debug)]
-pub struct Acceleration{
-    pub value: Vec3,
-}
 
 #[derive(Component, Debug)]
 pub struct Mass{
@@ -29,17 +25,26 @@ pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin{
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (update_position, SingleForceCollection::create));
+        app.add_systems(Update, (update_position));
     }
 }
 
-fn update_position(mut query: Query<(&mut Velocity,&Acceleration, &mut Transform)>, time: Res<Time>) {
+/*fn update_position(mut query: Query<(&mut Velocity,&Acceleration, &mut Transform)>, time: Res<Time>) {
     for (mut velocity,acceleration, mut transform) in query.iter_mut() {
         velocity.value += acceleration.value * time.delta_seconds();
         transform.translation += velocity.value * time.delta_seconds();
     }
-}
+}*/
 
+fn update_position(mut query: Query<(&mut Velocity, &mut Transform, &Mass, &ID)>, time: Res<Time>) {
+    let forces:TotalForceCollection = SingleForceCollection::create(&query).create_total_force_collection();
+    let id: usize = 1;
+    for (mut velociy, mut transform, mass, id) in query.iter_mut(){
+        
+        velociy.value += forces.collection[id.value-1].get_acceleration(&mass.value) * time.delta_seconds();
+        transform.translation += velociy.value * time.delta_seconds();
+    }
+}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -56,13 +61,14 @@ impl SingleForce {
     //calculates the force acting on planet1 from planet 2
     fn calculate_gravitational_force(mass1: &Mass, mass2: &Mass, planet1_transform: &Transform, planet2_transform: &Transform, id1: &ID, id2: &ID) -> SingleForce {
         let position1_to_position2 = planet2_transform.translation - planet1_transform.translation;
-        let distance: f32 = position1_to_position2.length();
-        if distance == 0. {
-            return SingleForce {
+        let mut distance: f32 = position1_to_position2.length();
+        if distance <= 1. {
+            distance = 1.;
+            /*return SingleForce {
                 from: id1.value,
                 to: id2.value,
                 force_vector: vec3(0.,0.,0.),
-            }
+            }*/
         }
         let gravitational_constant:f32 = 1.;
         SingleForce {
@@ -92,7 +98,7 @@ impl SingleForceCollection {
         num
     }
 
-    fn create(query: Query<(&Transform,&Mass, &ID)>){
+    fn create(query: &Query<(&mut Velocity,&mut Transform,&Mass, &ID)>) -> SingleForceCollection{
         let num_of_combinations: usize = SingleForceCollection::calculate_num_of_combinations();
         let mut loop_counter: usize = 0;
         let mut skip_counter: usize = 1;
@@ -101,8 +107,8 @@ impl SingleForceCollection {
             collection: Vec::new(),
         };
         
-        for (outer_transform,outer_mass, outer_id) in query.iter(){
-            for (inner_transform,inner_mass, inner_id) in query.iter().skip(skip_counter){
+        for (vel,outer_transform,outer_mass, outer_id) in query.iter(){
+            for (vel,inner_transform,inner_mass, inner_id) in query.iter().skip(skip_counter){
                 collection.collection.push( SingleForce::calculate_gravitational_force(
                     outer_mass,
                     inner_mass,
@@ -119,9 +125,10 @@ impl SingleForceCollection {
         
         //print!("collection: {:?}", collection);
         collection.calculate_total_force(&3_usize);
+        collection
     }
     
-    fn calculate_total_force(&self ,id: &usize){
+    fn calculate_total_force(&self ,id: &usize) -> TotalForce{
         let mut totalforce = TotalForce{
             id: *id,
             force_vector: vec3(0.,0.,0.),
@@ -151,13 +158,25 @@ impl SingleForceCollection {
         } else {
             let mut curr_index: usize = id-2;
             totalforce.force_vector += self.collection[curr_index].force_vector.neg();
-            for i in 3..2 + *id{
+            for i in 3..1 + *id{
                 curr_index += N-i;
                 totalforce.force_vector += self.collection[curr_index].force_vector.neg();
             }
         }
         
-        print!("totalforce for 3: {:?}", totalforce);
+        info!("totalforce for 3: {:?}", totalforce);
+        totalforce
+    }
+
+    fn create_total_force_collection(&self) -> TotalForceCollection{
+        let mut total_force_collection = TotalForceCollection{
+            collection: Vec::new(),
+        };
+        for i in 1..N+1{
+            let total_force : TotalForce = self.calculate_total_force(&i);
+            total_force_collection.collection.push(total_force);
+        }
+        total_force_collection
     }
 }
 
@@ -167,13 +186,17 @@ struct TotalForce{
     force_vector: Vec3,
 }
 
+impl TotalForce {
+    fn get_acceleration(&self, mass: &f32) -> Vec3{
+        let mut a = Vec3::new(0.,0.,0.);
+        a.x = self.force_vector.x / mass;
+        a.y = self.force_vector.y / mass;
+        a.z = self.force_vector.z / mass;
+        a
+    }
+}
+
 #[derive(Debug)]
 struct TotalForceCollection{
     collection: Vec<TotalForce>,
-}
-
-impl TotalForceCollection {
-    fn create(single_force_collection: SingleForceCollection) -> TotalForceCollection{
-        
-    }
 }
