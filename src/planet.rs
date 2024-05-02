@@ -12,8 +12,7 @@ const STANDARDT_SCALE: Vec3 = Vec3::new(0.05,0.05,1.);
 const STANDARDT_MASS: f32 = 1000.;
 
 //number of planets
-pub(crate) const N: u32 = 3;
-
+pub(crate) const N: usize = 10;
 #[derive(Bundle)]
 
 struct PlanetBundle {
