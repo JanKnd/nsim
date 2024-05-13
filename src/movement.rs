@@ -70,7 +70,7 @@ impl SingleForce {
                 force_vector: vec3(0.,0.,0.),
             }*/
         }
-        let gravitational_constant:f32 = 1.;
+        let gravitational_constant:f32 = 2.;
         SingleForce {
             from: id1.value,
             to: id2.value,
