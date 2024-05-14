@@ -17,7 +17,7 @@ fn set_window_icon(
     windows: NonSend<WinitWindows>,
 ) {
     let (icon_rgba, icon_width, icon_height) = {
-        let image = image::open("assets/Component 1.png")
+        let image = image::open("assets/Frame 1.png")
             .expect("Failed to open icon path")
             .into_rgba8();
         let (width, height) = image.dimensions();
