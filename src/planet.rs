@@ -1,6 +1,7 @@
 use bevy::math::vec3;
 use bevy::prelude::*;
 use rand::Rng;
+use crate::asset_loader::SceneAssets;
 use crate::movement::{Acceleration, ID, Mass, Velocity};
 
 const GRAVITATIONAL_CONSTANT: f32 = 1.;
@@ -12,7 +13,7 @@ const STANDARDT_SCALE: Vec3 = Vec3::new(0.05,0.05,1.);
 const STANDARDT_MASS: f32 = 10.;
 
 //number of planets
-const N: u32 = 5;
+const N: u32 = 100;
 
 #[derive(Bundle)]
 
@@ -39,7 +40,7 @@ pub struct PlanetPlugin;
 
 impl Plugin for PlanetPlugin{
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_n_planets);
+        app.add_systems(PostStartup, spawn_n_planets);
     }
 }
 
@@ -71,7 +72,7 @@ fn spawn_planet(mut commands: Commands, asset_server: Res<AssetServer>){
 
  */
 
-fn spawn_n_planets(mut commands: Commands, asset_server: Res<AssetServer>){
+fn spawn_n_planets(mut commands: Commands, scene_assets: Res<SceneAssets>){
     let mut rng = rand::thread_rng();
 
     commands.spawn(PlanetBundle{
@@ -88,7 +89,7 @@ fn spawn_n_planets(mut commands: Commands, asset_server: Res<AssetServer>){
             value: 1,
         },
         model: SpriteBundle {
-            texture: asset_server.load("planet.png"),
+            texture: scene_assets.planet.clone(),
             transform: Transform{
                 translation: Vec3::new(0.,0.,0.),
                 rotation: default(),
@@ -111,7 +112,7 @@ fn spawn_n_planets(mut commands: Commands, asset_server: Res<AssetServer>){
             value: 2,
         },
         model: SpriteBundle {
-            texture: asset_server.load("planet.png"),
+            texture: scene_assets.planet.clone(),
             transform: Transform{
                 translation: Vec3::new(2. * PlanetBundle::get_planet_radius(&1000f32),0.,0.),
                 rotation: default(),
@@ -137,7 +138,7 @@ fn spawn_n_planets(mut commands: Commands, asset_server: Res<AssetServer>){
                 value: i+1,
             },
             model: SpriteBundle {
-                texture: asset_server.load("planet.png"),
+                texture: scene_assets.planet.clone(),
                 transform: Transform{
                     translation: Vec3::new(rng.gen_range(-1000.0..1000.0),rng.gen_range(-1000.0..1000.0),0.),
                     rotation: default(),
