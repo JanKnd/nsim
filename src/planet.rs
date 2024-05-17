@@ -2,6 +2,7 @@ use bevy::math::vec3;
 use bevy::prelude::*;
 use rand::Rng;
 use crate::asset_loader::SceneAssets;
+use crate::collision::Collider;
 use crate::movement::{Acceleration, ID, Mass, Velocity};
 
 const GRAVITATIONAL_CONSTANT: f32 = 1.;
@@ -13,7 +14,7 @@ const STANDARDT_SCALE: Vec3 = Vec3::new(0.05,0.05,1.);
 const STANDARDT_MASS: f32 = 10.;
 
 //number of planets
-const N: u32 = 100;
+const N: u32 = 10;
 
 #[derive(Bundle)]
 
@@ -21,7 +22,7 @@ struct PlanetBundle {
     velocity: Velocity,
     acceleration: Acceleration,
     mass: Mass,
-    id: ID,
+    collider: Collider,
     model: SpriteBundle,
 }
 
@@ -75,58 +76,11 @@ fn spawn_planet(mut commands: Commands, asset_server: Res<AssetServer>){
 fn spawn_n_planets(mut commands: Commands, scene_assets: Res<SceneAssets>){
     let mut rng = rand::thread_rng();
 
-    commands.spawn(PlanetBundle{
-        velocity: Velocity {
-            value: Vec3::new(0.,0.,0.),
-        },
-        acceleration: Acceleration{
-            value: STARTING_ACCELERATION,
-        },
-        mass: Mass {
-            value: 1000f32,
-        },
-        id: ID {
-            value: 1,
-        },
-        model: SpriteBundle {
-            texture: scene_assets.planet.clone(),
-            transform: Transform{
-                translation: Vec3::new(0.,0.,0.),
-                rotation: default(),
-                scale: PlanetBundle::get_scale_vec(&1000f32),
-            },..default()
-        },
-    });
-
-    commands.spawn(PlanetBundle{
-        velocity: Velocity {
-            value: Vec3::new(0.,0.,0.),
-        },
-        acceleration: Acceleration{
-            value: STARTING_ACCELERATION,
-        },
-        mass: Mass {
-            value: 1000f32,
-        },
-        id: ID {
-            value: 2,
-        },
-        model: SpriteBundle {
-            texture: scene_assets.planet.clone(),
-            transform: Transform{
-                translation: Vec3::new(2. * PlanetBundle::get_planet_radius(&1000f32),0.,0.),
-                rotation: default(),
-                scale: PlanetBundle::get_scale_vec(&1000f32),
-            },..default()
-        },
-    });
-
-
-    for i in 2..N {
+    for i in 0..N {
         let mass:f32 = rng.gen_range(1_f32..1000_f32);
         commands.spawn(PlanetBundle{
             velocity: Velocity {
-                value: Vec3::new(rng.gen_range(-10.0..10.0),rng.gen_range(-10.0..10.0),0.),
+                value: Vec3::new(0.,0.,0.),
             },
             acceleration: Acceleration{
                 value: STARTING_ACCELERATION,
@@ -134,13 +88,12 @@ fn spawn_n_planets(mut commands: Commands, scene_assets: Res<SceneAssets>){
             mass: Mass {
                 value: mass,
             },
-            id: ID {
-                value: i+1,
-            },
+            collider: Collider::new(PlanetBundle::get_planet_radius(&mass)),
+
             model: SpriteBundle {
                 texture: scene_assets.planet.clone(),
                 transform: Transform{
-                    translation: Vec3::new(rng.gen_range(-1000.0..1000.0),rng.gen_range(-1000.0..1000.0),0.),
+                    translation: Vec3::new(rng.gen_range(-100.0..0.0),rng.gen_range(-100.0..0.0),0.),
                     rotation: default(),
                     scale: PlanetBundle::get_scale_vec(&mass),
                 },..default()
