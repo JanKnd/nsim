@@ -5,7 +5,7 @@ use crate::asset_loader::SceneAssets;
 use crate::collision::Collider;
 use crate::movement::{Acceleration, ID, Mass, Velocity};
 
-const GRAVITATIONAL_CONSTANT: f32 = 1.;
+const GRAVITATIONAL_CONSTANT: f32 = 10.;
 const STARTING_VELOCITY: Vec3 = Vec3::new(0.,0.,0.);
 
 const STARTING_ACCELERATION: Vec3 = Vec3::new(0.,0.,0.);
@@ -93,7 +93,7 @@ fn spawn_n_planets(mut commands: Commands, scene_assets: Res<SceneAssets>){
             model: SpriteBundle {
                 texture: scene_assets.planet.clone(),
                 transform: Transform{
-                    translation: Vec3::new(rng.gen_range(-100.0..0.0),rng.gen_range(-100.0..0.0),0.),
+                    translation: Vec3::new(rng.gen_range(-500.0..500.0),rng.gen_range(-100.0..500.0),0.),
                     rotation: default(),
                     scale: PlanetBundle::get_scale_vec(&mass),
                 },..default()
