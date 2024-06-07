@@ -14,7 +14,7 @@ const STANDARDT_SCALE: Vec3 = Vec3::new(0.05,0.05,1.);
 const STANDARDT_MASS: f32 = 10.;
 
 //number of planets
-const N: u32 = 20;
+const N: u32 = 3;
 
 #[derive(Bundle)]
 
@@ -77,7 +77,7 @@ fn spawn_n_planets(mut commands: Commands, scene_assets: Res<SceneAssets>){
     let mut rng = rand::thread_rng();
 
     for i in 0..N {
-        let mass:f32 = rng.gen_range(1_f32..1000_f32);
+        let mass:f32 = rng.gen_range(1_f32..100_f32);
         commands.spawn(PlanetBundle{
             velocity: Velocity {
                 value: Vec3::new(0.,0.,0.),
@@ -93,7 +93,7 @@ fn spawn_n_planets(mut commands: Commands, scene_assets: Res<SceneAssets>){
             model: SpriteBundle {
                 texture: scene_assets.planet.clone(),
                 transform: Transform{
-                    translation: Vec3::new(rng.gen_range(-500.0..500.0),rng.gen_range(-100.0..500.0),0.),
+                    translation: Vec3::new(rng.gen_range(-500.0..500.0),rng.gen_range(-500.0..500.0),0.),
                     rotation: default(),
                     scale: PlanetBundle::get_scale_vec(&mass),
                 },..default()

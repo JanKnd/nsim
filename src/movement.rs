@@ -5,7 +5,7 @@ use bevy::utils::HashMap;
 use winit::dpi::Position;
 use crate::collision::{calc_position_outside_collider, calc_velocity_eccentric_collision, Collider};
 
-const GRAVITATIONAL_CONSTANT:f32 = 1.;
+const GRAVITATIONAL_CONSTANT:f32 = 0.005;
 
 #[derive(Component, Debug)]
 pub struct Velocity{
@@ -82,34 +82,49 @@ fn handle_asteroid_collisions(
  */
 
 fn handle_collisions(
-    //mut query_a: Query<(Entity,&Collider,&mut Velocity, &mut Transform, &Mass)>, mut query_b: Query<(&mut Collider,&mut Velocity, &mut Transform, &Mass)>)
+    //mut query_a: Query<(&Entity,&Collider,&mut Velocity, &mut Transform, &Mass)>, mut query_b: Query<(&mut Collider,&mut Velocity, &mut Transform, &Mass)>)
     mut set: ParamSet<(Query<(Entity,&Collider,&Velocity, &Transform, &Mass)>,
-                       Query<(&mut Collider,&mut Velocity, &mut Transform)>)>)
+                       Query<(Entity, &mut Collider,&mut Velocity, &mut Transform)>)>)
 {
     //V[0] = translation
     //V[1] = Velocity.value
     //V[2] = Mass.value
     //V[3] = radius
 
-    let mut entity_map: HashMap<Entity,(Vec3,Vec3,f32,f32)> = HashMap::new();
+
+    let mut secondary_data: HashMap<Entity, (Vec3, Vec3)> = HashMap::new();
     
-    for (entity_a , collider_a, velocity_a, transform_a, mass_a) in set.p0().iter_mut() {
-        entity_map.insert(entity_a, (transform_a.translation,velocity_a.value,mass_a.value,collider_a.radius));
-    }
-    
-    let query_0 = set.p0();
-    
-    for hashmap_entry in entity_map.iter_mut(){
-        let query_for_value = query_0.get(*hashmap_entry.0).unwrap();
-        let colliding_entities = &query_for_value.1.colliding_entities;
-        
-        for entity  in colliding_entities {
-            let a = entity_map.entry(*entity).;
-            hashmap_entry.1.0 =  vec3(3.,4.,4.);
+    let query0 = set.p0();
+    for (entity_a, collider_a, velocity_a, transform_a, mass_a) in query0.iter(){
+
+        //.1 = pos ; .2 = vel;
+        let mut intermediary_vec: Vec<(Entity, Vec3, Vec3)> = Vec::new();
+
+        let mut vel_a: Vec3 = velocity_a.value;
+
+        for entity_b in collider_a.colliding_entities.clone(){
+            let query_item_b = query0.get(entity_b).unwrap();
+            let pos_b:Vec3 = calc_position_outside_collider(transform_a.translation, query_item_b.3.translation, collider_a.radius, query_item_b.1.radius, query_item_b.2.value);
+            let velocities = calc_velocity_eccentric_collision(transform_a.translation, query_item_b.3.translation, vel_a, query_item_b.2.value, mass_a.value, query_item_b.4.value);
+            vel_a = velocities[0];
+            let vel_b = velocities[1];
+
+            intermediary_vec.push((entity_b,pos_b,vel_b));
         }
-        
+
+        secondary_data.insert(entity_a,(transform_a.translation, vel_a));
+
+        for i in 0..intermediary_vec.len(){
+            secondary_data.insert(intermediary_vec[i].0,(intermediary_vec[i].1, intermediary_vec[i].2));
+        }
     }
-    
+
+    for (entity, mut collider, mut velocity, mut transform) in set.p1().iter_mut(){
+        let entry_for_entity = secondary_data.get_key_value(&entity).unwrap();
+        collider.colliding_entities.clear();
+        velocity.value = entry_for_entity.1.0;
+        transform.translation = entry_for_entity.1.0;
+    }
     
 }
 
